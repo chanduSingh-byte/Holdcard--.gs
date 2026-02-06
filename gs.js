@@ -74,6 +74,10 @@ function doGet(e) {
       case "getDefectItems":
         return corsResponse_(getDefectItems());
 
+      case "getOperators":
+        return corsResponse_(getOperatorsFromMaster());
+
+
 
       default:
         return corsResponse_([]);
@@ -99,6 +103,35 @@ const COL_STATUS = 10;   // ✅ FIX
 const COL_REMINDER = 11;
 
 
+
+
+
+// ===== OPERATOR MASTER API =====
+// ===== MASTER SHEET COLUMN B =====
+function getOperatorsFromMaster() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName("Master");
+
+  if (!sh) {
+    console.log("❌ Master sheet not found");
+    return [];
+  }
+
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+
+  const data = sh.getRange(2, 2, lastRow - 1, 1)
+    .getValues()
+    .flat()
+    .filter(v => v && v.toString().trim() !== "");
+
+  console.log("✅ Operators:", data);
+  return data;
+}
+
+
+
+
 function getAllWaitHold() {
   const sh = SpreadsheetApp.getActive().getSheetByName("HoldCard");
   if (!sh || sh.getLastRow() < 2) return [];
@@ -121,12 +154,12 @@ function getAllWaitHold() {
       part: r[COL_PART - 1],
       decision: r[COL_HOLD_REASON - 1],
       dateTime: r[COL_HOLD_DATETIME - 1],
-      userdateTime:r[COL_DEFECT-1 ],
+      userdateTime: r[COL_DEFECT - 1],
       expectedDecision: r[COL_EXPECTED_DECISION - 1],
       status: r[COL_STATUS - 1] || "OPEN",
     })
     );
-    console.log(waits)
+  console.log(waits)
 
   return waits;
 }
@@ -643,7 +676,7 @@ function getHoldCardNumbers() {
   if (!sh || sh.getLastRow() < 2) return [];
 
   const data = sh.getRange(2, 1, sh.getLastRow() - 1, 9).getValues();
-    console.log(data)
+  console.log(data)
   return data
     .filter(r => String(r[8]).toUpperCase() === "OPEN")
     .map(r => r[0]);
